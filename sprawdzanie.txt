@@ -1,0 +1,94 @@
+Rezultat 3: Skonfigurowane interfejsy stacji roboczej i serwera
+Serwer (Kryteria 3.1 – 3.6)
+Aby sprawdzić nazwy interfejsów (LAN1 i LAN2), ich adresy IP oraz maski podsieci:
+
+bash
+ip addr show
+# LUB
+nmcli connection show
+Dla LAN1 powinieneś zobaczyć IP 10.0.0.2 z maską /24 (255.255.255.0). Dla LAN2: 10.0.1.2/24.
+
+Aby sprawdzić bramę domyślną przypisaną do serwera (Kryterium 3.3):
+
+bash
+ip route show default
+# Oczekiwany wynik: "default via 10.0.0.1..."
+Aby sprawdzić serwer DNS przypisany do połączenia LAN1 (Kryterium 3.4):
+
+bash
+cat /etc/resolv.conf
+# Oczekiwany wynik: "nameserver 8.8.8.8" (lub nmcli device show LAN1 | grep IP4.DNS)
+Stacja Robocza (Kryteria 3.7 – 3.10)
+Aby upewnić się, że stacja robocza używa opcji automatycznego pobierania (DHCP) (Kryterium 3.7 i 3.8):
+
+bash
+nmcli connection show SiecKliencka | grep -i ipv4.method
+# Oczekiwany wynik: "ipv4.method: auto"
+Aby wykonać testy połączenia i wygenerować pliki sprawdzające (Kryterium 3.9 i 3.10):
+
+bash
+# Upewnij się najpierw, że folder istnieje
+mkdir -p /home/admin/Desktop/sprawdzenie
+
+# Test na stacji roboczej (Ping serwera i routera) - zastępuje ipconfig
+ip addr > /home/admin/Desktop/sprawdzenie/ipconfig_linux.txt
+ping -c 4 10.0.1.2 > /home/admin/Desktop/sprawdzenie/ping_serwer.txt
+ping -c 4 10.0.0.1 > /home/admin/Desktop/sprawdzenie/ping_router.txt
+Rezultat 4: Skonfigurowane usługi sieciowe
+Serwer (Kryteria 4.1 – 4.2: Routing i NAT)
+Aby sprawdzić, czy routing (przekazywanie pakietów IP) jest uruchomiony na serwerze (Kryterium 4.1):
+
+bash
+sysctl net.ipv4.ip_forward
+# Oczekiwany wynik: "net.ipv4.ip_forward = 1"
+Aby sprawdzić, czy na interfejsie zewnętrznym (np. eth0 w LAN1) działa maskarada / translacja adresów (Kryterium 4.2):
+
+bash
+sudo firewall-cmd --list-all --zone=external
+# Oczekiwany wynik: wpis "masquerade: yes"
+Serwer (Kryteria 4.3 – 4.8: DHCP)
+Wszystkie informacje o konfiguracji DHCP dla podsieci 10.0.1.0/24 (Maska, zakres, brama, DNS i domena egzamin.local) można zweryfikować odczytując plik konfiguracyjny (Kryteria 4.4 - 4.8):
+
+bash
+cat /etc/dhcpd.conf
+Aby potwierdzić, że usługa DHCP faktycznie działa (Kryterium 4.3):
+
+bash
+systemctl status dhcpd
+Stacja Robocza (Kryterium 4.9: Działanie DHCP)
+Jeśli stacja robocza otrzymała adres IP, sprawdzenie następuje przez odczyt wygenerowanych plików na pulpicie administratora (folder sprawdzenie przygotowany w kryterium 3.9). Z punktu widzenia terminala można też wykonać:
+
+bash
+# Na stacji roboczej
+ip route show
+cat /etc/resolv.conf
+# Powinny wskazywać DNS'y i bramę rozdaną przez DHCP.
+Rezultat 5: Skonfigurowany serwer plików
+Serwer i Stacja Robocza (Kryteria 5.1 – 5.2: Użytkownicy)
+Sprawdzenie, czy utworzono użytkowników z odpowiednią nazwą "Jan Kowalski":
+
+bash
+getent passwd jkowalski
+# Oczekiwany wynik m.in: "jkowalski❌1000:1000:Jan Kowalski:/home/jkowalski:/bin/bash"
+Serwer (Kryteria 5.3 – 5.5: Zasób i Uprawnienia)
+Sprawdzenie udziału w konfiguracji Samby (Kryterium 5.3):
+
+bash
+testparm -s
+# Przewinięcie w dół do sekcji [dane] i odczytanie "path = /srv/samba/dane"
+Sprawdzenie uprawnień systemowych folderu oraz list kontroli dostępu ACL (Kryterium 5.4 - 5.5):
+
+bash
+ls -ld /srv/samba/dane
+getfacl /srv/samba/dane
+# Wymagane, by widniało tam pełne uprawnienie rwx dla grupy Administratorzy oraz dla jkowalski.
+Stacja Robocza (Kryterium 5.6: Mapowanie zasobu sieciowego)
+Aby udowodnić, że zasób z serwera został podmontowany i przypisany użytkownikowi, na stacji roboczej wpisz polecenie wyliczające aktualnie zamontowane dyski plików:
+
+bash
+df -h | grep "10.0.1.2/dane"
+# Oczekiwany wynik: linijka pokazująca, że udział sieciowy np. //10.0.1.2/dane jest podmontowany w /mnt/K (albo analogicznym katalogu)
+Można też sprawdzić wpis automatycznego montowania pliku przy starcie systemu:
+
+bash
+cat /etc/fstab | grep "dane"
