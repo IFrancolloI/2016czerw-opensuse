@@ -1,0 +1,25 @@
+sudo zypper in git 
+git clone https://github.com/IFrancolloI/2016czerw-opensuse
+cd 2016czerw-opensuse
+chmod +x konfiguracja-serwer.sh
+./konfiguracja-serwer.sh
+
+jeżeli plik sh nie bangla doinstalowac dos2unix - sudo zypper in dos2unix
+dos2unix konfiguracja.sh
+./konfiguracja-serwer.sh
+
+zmienic eth1(LAN2) na enpXs0
+w pliku /etc/sysconfig/dhcpd na enpXs0
+
+sudo zypper in git 
+git clone https://github.com/IFrancolloI/2016czerw-opensuse
+cd 2016czerw-opensuse
+chmod +x konfiguracja-klient.sh
+./konfiguracja-klient.sh
+
+jeżeli plik sh nie bangla doinstalowac dos2unix - sudo zypper in dos2unix
+dos2unix konfiguracja-klient.sh
+./konfiguracja-klien.sh 
+
+
+sudo zypper install cifs-utils (jesli odmawia PackageKit)
