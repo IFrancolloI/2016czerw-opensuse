@@ -4,7 +4,7 @@ echo "=== Rozpoczynam automatyczną konfigurację stacji roboczej openSUSE 16.0 
 
 # 1. Konfiguracja sieci (Zadanie 10)
 # Pobieranie adresu IPv4 i DNS automatycznie (DHCP) dla interfejsu (np. eth0/enp0s3)
-IF_CLIENT="eth0"
+IF_CLIENT="enp0s3"
 
 echo "--- Konfiguracja klienta DHCP na interfejsie $IF_CLIENT ---"
 mkdir -p /etc/NetworkManager/system-connections
